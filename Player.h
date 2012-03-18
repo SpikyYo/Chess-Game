@@ -8,8 +8,6 @@
 class Player
 {
 public :
-	enum ColorPlayer { BLACK=0, WHITE };
-
 	Player(int Color);
 	~Player();
 

@@ -4,11 +4,12 @@
 
 #include"Piece.h"
 
-Piece::Piece(int type, bool canJump, Square* square) :
+Piece::Piece(int type, bool canJump, Square* square, int color) :
 	m_PieceType(type), 
-	m_CanJump(canJump)
+	m_CanJump(canJump),
+	m_PieceColor(color)
 {
-	SetSquare(square);
+	m_Square = square;
 }
 
 Piece::~Piece()

@@ -10,14 +10,17 @@
 class Piece
 {
 public :
-	enum PieceType { KING=0, QUEEN, ROOK, KNIGHT, BISHOP, PAWNS };
+	enum PieceColor { BLACK=0, WHITE };
+	enum PieceType { KING=0, QUEEN, ROOK, BISHOP, KNIGHT, PAWNS };
 
-	Piece(int type, bool canJump, Square* square);
+	Piece(int type, bool canJump, Square* square, int color);
 
 	int GetType() {return m_PieceType; }
 	void SetType(int type) { m_PieceType = type; }
 	bool CanJump() {return m_CanJump; }
 	void SetCanJump(bool value) { m_CanJump = value; }
+	int GetPieceColor() {return m_PieceColor; }
+	void SetPieceColor(int type) { m_PieceColor = type; }
 	Square* GetSquare() {return m_Square; }
 	void SetSquare(Square* square) { 
 		m_Square->SetSquareColor( square->GetSquareColor() );
@@ -29,6 +32,7 @@ public :
 private :
 	int m_PieceType;
 	bool m_CanJump; //For knight
+	int m_PieceColor;
 	Square* m_Square;
 
 };

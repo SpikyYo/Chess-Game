@@ -17,14 +17,16 @@ bool GameEngine::init()
 	if( SDL_Init( SDL_INIT_EVERYTHING ) == -1 )
 		return false;
 
+	//Set screen dimension
 	m_screen = SDL_SetVideoMode( SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_BPP, SDL_SWSURFACE );
-
-	m_WhitePieces.reserve(8);
-	m_BlackPieces.reserve(8);
-	InitPiecesPosition();
 
 	if( m_screen == NULL )
 		return false;
+
+	//Init pieces positions on the graphic (all pieces are on the same single graphic... need to clip them one by one)
+	m_WhitePieces.reserve(8);
+	m_BlackPieces.reserve(8);
+	InitPiecesPosition();
 
 	SDL_WM_SetCaption("Chess game!", NULL);
 
@@ -33,6 +35,7 @@ bool GameEngine::init()
 
 void GameEngine::InitPiecesPosition()
 {
+	//Those are the position of each piece on the graphic
 	int xPos[] = {0, 94, 190, 285, 380, 480};
 	SDL_Rect tempRect;
 
@@ -51,11 +54,6 @@ void GameEngine::InitPiecesPosition()
 		tempRect.h = 50;
 
 		m_WhitePieces.push_back(tempRect);
-
-		//if( i == 0 || i == 1 )
-		//	xPos += 90;
-		//else
-		//	xPos += 100;
 	}
 }
 
@@ -88,8 +86,15 @@ void GameEngine::ApplySurface( SDL_Surface* source, SDL_Surface* destination, in
 
 	srcOffSet.x = xSrc;
 	srcOffSet.y = ySrc;
-	srcOffSet.w = width;
-	srcOffSet.h = height;
+
+	if( width == 0 )
+		srcOffSet.w = source->w;
+	else
+		srcOffSet.w = width;
+	if( height == 0 )
+		srcOffSet.h = source->h;
+	else
+		srcOffSet.h = height;
 
 	offSet.x = xDest;
 	offSet.y = yDest;
@@ -103,14 +108,14 @@ void GameEngine::DrawChessBoard()
 	int yPos = 0; 
 	bool isDarkSquare = false;
 
-	for(int i=0; i<8; i++)  //8 should not be hardcoded...  NUM_RANKS
+	for(int i = 0; i < Square::NUM_RANK; i++)  
 	{
-		for(int j=0; j<8; j++)  //8 should not be hardcoded... NUM_FILES
+		for(int j = 0; j < Square::NUM_FILE; j++)  
 		{
 			if (isDarkSquare )
-				ApplySurface( GetDarkSquare(), GetScreen(), xPos, yPos, 0, 0, 50, 50 ); //50 should not be hardcoded... SQUARE_DIM
+				ApplySurface( GetDarkSquare(), GetScreen(), xPos, yPos, 0, 0, Square::SQUARE_DIMENSION, Square::SQUARE_DIMENSION );
 			else
-				ApplySurface( GetLightSquare(), GetScreen(), xPos, yPos, 0, 0, 50, 50 );
+				ApplySurface( GetLightSquare(), GetScreen(), xPos, yPos, 0, 0, Square::SQUARE_DIMENSION, Square::SQUARE_DIMENSION );
 
 			isDarkSquare = !isDarkSquare;
 
@@ -159,6 +164,33 @@ void GameEngine::DrawPieces()
 	}
 
 	SDL_Flip( GetScreen() );
+}
+
+void GameEngine::DrawSpecificPiece( int oPiece, int x, int y, int color )
+{
+	if( color == Piece::BLACK )
+		ApplySurface(GetPieces(), GetScreen(), x, y, m_BlackPieces[oPiece].x, m_BlackPieces[oPiece].y, m_BlackPieces[oPiece].w, m_BlackPieces[oPiece].h );
+	else
+		ApplySurface(GetPieces(), GetScreen(), x, y, m_WhitePieces[oPiece].x, m_WhitePieces[oPiece].y, m_WhitePieces[oPiece].w, m_WhitePieces[oPiece].h );
+
+	SDL_Flip( GetScreen() );
+}
+
+void GameEngine::DrawHilite( int x, int y )
+{
+	ApplySurface( GetHilite(), GetScreen(), x-3, y-3 );
+
+	SDL_Flip( GetScreen() );
+}
+
+void GameEngine::Refresh()
+{
+	//DrawChessBoard();
+}
+
+int GameEngine::RetrievePieceRank(int value)
+{
+	return 0;
 }
 
 /********************   SCALING METHOD USED FROM THE SDL WEB RESSOURCE ***********************************/
@@ -258,9 +290,11 @@ bool GameEngine::LoadFiles()
 {
 	m_darkSquare = LoadImage( "images/Dark_Square.bmp" );
 	m_lightSquare = LoadImage( "images/Light_Square.bmp" );
-	m_Pieces = LoadImage( "images/Chess_symbols_set3.bmp" );
+	m_Pieces = LoadImage( "images/Chess_symbols_set3.bmp" );   //All the pieces are on this same graphic
+	m_Hilite = LoadImage( "images/Hilite2.bmp" );
 
-	if( m_darkSquare == NULL || m_lightSquare == NULL || m_Pieces == NULL )
+	if( m_darkSquare == NULL || m_lightSquare == NULL || 
+		m_Pieces == NULL || m_Hilite == NULL )
 		return false;
 
 	return true;
@@ -271,6 +305,7 @@ void GameEngine::CleanUp()
 	SDL_FreeSurface( m_darkSquare ); //Because the image has been loaded..
 	SDL_FreeSurface( m_lightSquare );
 	SDL_FreeSurface( m_Pieces );
+	SDL_FreeSurface( m_Hilite );
 
 	SDL_Quit();
 }

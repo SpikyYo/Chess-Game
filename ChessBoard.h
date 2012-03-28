@@ -21,7 +21,6 @@ public :
 	void InitChessBoard();
 	void InitPieces();
 	Square* GetSquare( int file, int rank );
-	void ClickSquare( int x, int y );
 
 	void RefreshPieces(GameEngine* ge);
 	void RefreshChessBoard(GameEngine* ge);
@@ -31,7 +30,8 @@ public :
 	void PutPieceAtSpecificSquare( Piece* selectedPiece, int fileDest, int rankDest );
 
 private :
-	std::vector< std::vector< Square* > > m_Squares;  //All the squares which compose the chessBoard in a 2-dimensionnal vector
+	//std::vector< std::vector< Square* > > m_Squares;  //All the squares which compose the chessBoard in a 2-dimensionnal vector
+	Square* m_Squares[8][8];
 	std::vector< Piece* > m_WhitePieces;
 	std::vector< Piece* > m_BlackPieces;
 

@@ -8,11 +8,15 @@
 #include"GameEngine.h"
 #include"ChessBoard.h"
 #include"Square.h"
+#include"GameLogic.h"
+#include"PiecesRules.h"
 
 int main(int argc, char* args[] )
 {
 	GameEngine *mainEngine = new GameEngine();
 	ChessBoard *chessBoard = new ChessBoard();
+	GameLogic *gameLogic = new GameLogic();
+	PiecesRules *piecesRules = new PiecesRules();
 
 	bool quit = false;
 
@@ -33,8 +37,8 @@ int main(int argc, char* args[] )
 
 	SDL_Event myEvent;
 	std::pair< int, int > pos;
-	Piece* selectedPiece;
-	bool isPieceSelected = false;
+	PiecesRules::VectorMoves availableMove;
+	bool refresh = false;
 
 	while( quit == false )
 	{
@@ -48,27 +52,43 @@ int main(int argc, char* args[] )
 					pos = std::make_pair( myEvent.button.x, myEvent.button.y );
 					pos = Square::GetPositionFromFileRank( Square::GetFileFromPosition(pos), Square::GetRankFromPosition(pos) );
 
-					if( isPieceSelected )
-					{
-						if( chessBoard->GetPieceAtSpecificSquare( Square::GetFileFromPosition(pos), Square::GetRankFromPosition(pos) ) == NULL )
-						{
-							chessBoard->PutPieceAtSpecificSquare( selectedPiece, Square::GetFileFromPosition(pos), Square::GetRankFromPosition(pos) );
-							isPieceSelected = false;
-						}
-					}
-					else
-					{
-						selectedPiece = chessBoard->GetPieceAtSpecificSquare( Square::GetFileFromPosition(pos), Square::GetRankFromPosition(pos) );
+					refresh = gameLogic->ClickSquare( chessBoard, piecesRules, pos );
 
-						if( selectedPiece != NULL )
-						{
-							isPieceSelected = true;
-						}
-					}
+					if(refresh)
+					{
+						chessBoard->RefreshChessBoard(mainEngine);
 
-					chessBoard->RefreshChessBoard(mainEngine);
-					mainEngine->DrawHilite(pos.first, pos.second);
-					chessBoard->RefreshPieces(mainEngine);
+						if( gameLogic->IsPieceSelected() )
+						{
+							//Find the available move for the piece selected and draw and hilite on it
+							//...king and pawns have differents rules than other pieces...
+							if( gameLogic->GetSelectedPiece()->GetType() == Piece::KING )
+							{
+								availableMove = piecesRules->SetKingPossibleMove( pos );
+							}
+							else if( gameLogic->GetSelectedPiece()->GetType() == Piece::PAWNS )
+							{
+								availableMove = piecesRules->SetPawnsPossibleMove(pos, gameLogic->GetSelectedPiece()->GetPieceColor() );
+							}
+							else
+							{
+								availableMove = piecesRules->FindPossibleMove( gameLogic->GetSelectedPiece()->GetType(), pos );
+							}
+
+							for( PiecesRules::VectorMoves::iterator it = availableMove.begin(); it != availableMove.end(); it++ )
+							{
+								pos = Square::GetPositionFromFileRank( (*it).first, (*it).second );
+								mainEngine->DrawHilite( pos.first, pos.second ); //Must have coordonates instead of file/rank..
+							}
+						}
+						else
+						{
+							if( !gameLogic->CancelMove() )
+								mainEngine->DrawHilite( pos.first, pos.second );
+						}
+
+						chessBoard->RefreshPieces(mainEngine);
+					}
 				}
 			}
 
@@ -83,6 +103,8 @@ int main(int argc, char* args[] )
 
 	delete mainEngine;
 	delete chessBoard;
+	delete gameLogic;
+	delete piecesRules;
 
 	return 0;
 }

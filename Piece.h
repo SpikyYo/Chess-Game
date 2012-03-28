@@ -22,10 +22,10 @@ public :
 	int GetPieceColor() {return m_PieceColor; }
 	void SetPieceColor(int type) { m_PieceColor = type; }
 	Square* GetSquare() {return m_Square; }
-	void SetSquare(Square* square) { 
-		m_Square->SetSquareColor( square->GetSquareColor() );
+	void SetSquare(Square* square) { m_Square = square; }
+		/*m_Square->SetSquareColor( square->GetSquareColor() );
 		m_Square->SetFile( square->GetFile() );
-		m_Square->SetRank( square->GetRank() ); }
+		m_Square->SetRank( square->GetRank() ); }*/
 
 	~Piece();
 

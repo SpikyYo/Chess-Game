@@ -9,6 +9,7 @@ Piece::Piece(int type, bool canJump, Square* square, int color) :
 	m_CanJump(canJump),
 	m_PieceColor(color)
 {
+	//m_Square = NULL;
 	m_Square = square;
 }
 

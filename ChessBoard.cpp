@@ -8,38 +8,57 @@ ChessBoard::ChessBoard()
 {
 	m_WhitePieces.reserve(16);
 	m_BlackPieces.reserve(16);
-	m_Squares.reserve(64);
+	//m_Squares.reserve(64);
+
+	//m_Squares = new (Square**)[8];
+	//for (int i = 0; i < 8; ++i) {
+	//  m_Squares[i] = new (Square*)[8];
+	//}
 }
 
 ChessBoard::~ChessBoard()
 {
 	for(std::vector< Piece* >::iterator it = m_WhitePieces.begin(); it != m_WhitePieces.end(); it++)
 	{
-		delete (*it);
+		if( (*it) != NULL )
+			delete (*it);
 		(*it) = NULL;
 	}
 	m_WhitePieces.clear();
 
 	for(std::vector< Piece* >::iterator it = m_BlackPieces.begin(); it != m_BlackPieces.end(); it++)
 	{
-		delete (*it);
+		if( (*it) != NULL )
+			delete (*it);
 		(*it) = NULL;
 	}
 	m_BlackPieces.clear();
 
 	std::vector< Square* > temp;
 
-	for(std::vector< std::vector< Square* > >::iterator it = m_Squares.begin(); it != m_Squares.end(); it++)
+	//for(std::vector< std::vector< Square* > >::iterator it = m_Squares.begin(); it != m_Squares.end(); it++)
+	//{
+	//	temp = (*it);
+	//	
+	//	for(std::vector< Square* >::iterator itr = temp.begin(); itr != temp.end(); itr++)
+	//	{
+	//		delete (*itr);
+	//		(*itr) = NULL;
+	//	}
+	//}
+	//m_Squares.clear();
+	for(int i = 0; i < 8; i++)
 	{
-		temp = (*it);
-		
-		for(std::vector< Square* >::iterator itr = temp.begin(); itr != temp.end(); itr++)
+		for(int j = 0; j < 8; j++)
 		{
-			delete (*itr);
-			(*itr) = NULL;
+			delete m_Squares[i][j];
 		}
 	}
-	m_Squares.clear();
+	//for(int i = 7; i >= 0; i--)
+	//{
+	//	delete [] m_Squares[i];
+	//}
+	//delete [] m_Squares;
 }
 
 void ChessBoard::InitChessBoard()
@@ -49,27 +68,29 @@ void ChessBoard::InitChessBoard()
 	int xPos = 0; 
 	int yPos = 0; 
 	bool isDarkSquare = false;
-	std::vector< Square* > tempSquare;
+	//std::vector< Square* > tempSquare;
 
 	for(int i=0; i<Square::NUM_RANK; i++)  
 	{
-		tempSquare.clear();
+		//tempSquare.clear();
 
 		for(int j=0; j<Square::NUM_FILE; j++)  
 		{
 			if (isDarkSquare )
 			{
-				tempSquare.push_back( new Square(Square::SquareColor::DARK, Square::NUM_RANK-i-1, j) ); //reverse rank and file?... suppose to be j, Square::NUM_RANK-i-1
+				//tempSquare.push_back( new Square(Square::SquareColor::DARK, Square::NUM_RANK-i-1, j) ); //reverse rank and file?... suppose to be j, Square::NUM_RANK-i-1
+				m_Squares[i][j] = new Square(Square::SquareColor::DARK, i, Square::NUM_RANK-j-1);
 			}
 			else
 			{
-				tempSquare.push_back( new Square(Square::SquareColor::LIGHT, Square::NUM_RANK-i-1, j) );
+				//tempSquare.push_back( new Square(Square::SquareColor::LIGHT, Square::NUM_RANK-i-1, j) );
+				m_Squares[i][j] = new Square(Square::SquareColor::LIGHT, i, Square::NUM_RANK-j-1);
 			}
 
 			isDarkSquare = !isDarkSquare;
 		}
 
-		m_Squares.push_back(tempSquare);
+		//m_Squares.push_back(tempSquare);
 
 		isDarkSquare = !isDarkSquare;
 	}
@@ -140,12 +161,7 @@ void ChessBoard::InitPieces()
 
 Square* ChessBoard::GetSquare( int file, int rank )
 {
-	return m_Squares[file][rank];
-}
-
-void ChessBoard::ClickSquare(int x, int y)
-{
-	
+	return m_Squares[file][Square::NUM_RANK-rank-1];  //revert rank again?
 }
 
 void ChessBoard::RefreshPieces(GameEngine* ge)
@@ -210,10 +226,35 @@ Piece* ChessBoard::GetPieceAtSpecificSquare( int file, int rank )
 
 void ChessBoard::RemovePieceFromSpecificSquare( int file, int rank )
 {
+	Piece* temp = NULL;
+
+	temp = GetPieceAtSpecificSquare( file, rank );
+
+	for( std::vector< Piece* >::iterator it = m_WhitePieces.begin(); it != m_WhitePieces.end(); it++ )
+	{
+		if( (*it) == temp )
+		{
+			m_WhitePieces.erase(it);
+		}
+	}
+
+	for( std::vector< Piece* >::iterator it = m_BlackPieces.begin(); it != m_BlackPieces.end(); it++ )
+	{
+		if( (*it) == temp )
+		{
+			m_BlackPieces.erase(it);
+		}
+	}
+
+	delete temp;
+	temp = NULL;
 }
 
 void ChessBoard::PutPieceAtSpecificSquare( Piece* selectedPiece, int fileDest, int rankDest )
 {
+	Square* temp = selectedPiece->GetSquare();
+	temp = GetSquare( fileDest, rankDest );
 	selectedPiece->SetSquare( GetSquare( fileDest, rankDest ) );
+	temp = selectedPiece->GetSquare();
 }
 
